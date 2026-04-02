@@ -1,3 +1,9 @@
 [submodule "fashion-ai-agent"]
 	path = fashion-ai-agent
 	url = https://github.com/ToRong31/fashion-ai-agent.git
+[submodule "fashion-ai-backend"]
+	path = fashion-ai-backend
+	url = https://github.com/ToRong31/fashion-ai-backend.git
+[submodule "fashion-ai-frontend"]
+	path = fashion-ai-frontend
+	url = https://github.com/ToRong31/fashion-ai-frontend.git
