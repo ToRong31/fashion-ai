@@ -1,0 +1,3 @@
+[submodule "fashion-ai-agent"]
+	path = fashion-ai-agent
+	url = https://github.com/ToRong31/fashion-ai-agent.git
