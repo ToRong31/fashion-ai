@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giải thích chi tiết source AI — Fashion AI Agent (ToRoMe Store)</title>
+<style>
+  :root{
+    --bg:#0f1116; --panel:#171a21; --panel2:#1d212b; --border:#2a2f3a;
+    --text:#d6dae3; --muted:#8b93a3; --accent:#7c9eff; --accent2:#52d1a4;
+    --warn:#ffcb6b; --kw:#c792ea; --str:#c3e88d; --num:#f78c6c; --com:#5f6b80;
+    --fn:#82aaff; --warnbg:#3a2a14; --warnborder:#7a5a1a; --warntext:#ffd479;
+    --okbg:#16291f; --okborder:#2e6b4a;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:"Segoe UI",-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.7; font-size:16px;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px 120px}
+  header.hero{
+    background:linear-gradient(135deg,#1a2748,#241a3e 55%,#10241f);
+    border-bottom:1px solid var(--border); padding:54px 24px 46px; text-align:center;
+  }
+  header.hero h1{margin:0 0 8px; font-size:32px; letter-spacing:.3px}
+  header.hero p{margin:4px 0; color:var(--muted)}
+  .badge{
+    display:inline-block; background:#26304a; color:var(--accent);
+    border:1px solid #34406a; border-radius:999px; padding:3px 12px;
+    font-size:12.5px; margin:6px 4px 0;
+  }
+  h2{
+    margin:54px 0 14px; font-size:24px; padding-bottom:8px;
+    border-bottom:2px solid var(--border); color:#fff;
+  }
+  h3{margin:34px 0 10px; font-size:19px; color:#eef1f7}
+  h4{margin:22px 0 8px; font-size:16.5px; color:var(--accent2)}
+  p{margin:10px 0}
+  a{color:var(--accent); text-decoration:none}
+  a:hover{text-decoration:underline}
+  code.inline{
+    background:#252a36; border:1px solid var(--border); border-radius:5px;
+    padding:1px 6px; font-family:"Consolas","SF Mono",Monaco,monospace;
+    font-size:13.5px; color:#e5b8ff;
+  }
+  .toc{
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:12px; padding:18px 26px; margin:30px 0;
+  }
+  .toc h3{margin-top:0}
+  .toc ol{margin:8px 0; padding-left:22px}
+  .toc ol li{margin:5px 0}
+  .toc a{color:var(--text)}
+  .card{
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:12px; padding:4px 22px 16px; margin:18px 0;
+  }
+  .filebar{
+    display:flex; align-items:center; gap:10px; margin:26px 0 6px;
+    background:var(--panel2); border:1px solid var(--border);
+    border-radius:8px 8px 0 0; padding:8px 14px; font-family:monospace;
+    font-size:13.5px; color:var(--accent2); border-bottom:none;
+  }
+  .filebar .dot{width:11px;height:11px;border-radius:50%;background:#3a4050;flex:none}
+  pre{
+    margin:0 0 4px; background:#11141b; border:1px solid var(--border);
+    border-radius:0 0 8px 8px; padding:16px 18px; overflow-x:auto;
+    font-family:"Consolas","SF Mono",Monaco,monospace; font-size:13px;
+    line-height:1.65;
+  }
+  pre.standalone{border-radius:8px; margin:14px 0}
+  pre code{white-space:pre}
+  .ln{color:#3f4759; user-select:none; display:inline-block; width:30px; text-align:right; margin-right:14px}
+  .kw{color:var(--kw)}
+  .str{color:var(--str)}
+  .num{color:var(--num)}
+  .com{color:var(--com); font-style:italic}
+  .fn{color:var(--fn)}
+  .dec{color:#ffcb6b}
+  .explain{
+    border-left:3px solid var(--accent); background:#161c2c;
+    padding:12px 16px; margin:10px 0 22px; border-radius:0 8px 8px 0;
+  }
+  .explain ul{margin:6px 0; padding-left:22px}
+  .explain li{margin:5px 0}
+  .explain b{color:#fff}
+  .note{
+    background:var(--warnbg); border:1px solid var(--warnborder);
+    border-radius:8px; padding:12px 16px; margin:16px 0; color:var(--warntext);
+  }
+  .note b{color:#ffe9b0}
+  .ok{
+    background:var(--okbg); border:1px solid var(--okborder);
+    border-radius:8px; padding:12px 16px; margin:16px 0;
+  }
+  .flow{
+    background:#11141b; border:1px solid var(--border); border-radius:10px;
+    padding:18px; margin:18px 0; overflow-x:auto;
+    font-family:"Consolas",monospace; font-size:12.5px; line-height:1.5; color:#aab3c5;
+  }
+  table{
+    width:100%; border-collapse:collapse; margin:16px 0; font-size:14.5px;
+    background:var(--panel); border-radius:8px; overflow:hidden;
+  }
+  th,td{border:1px solid var(--border); padding:9px 12px; text-align:left; vertical-align:top}
+  th{background:var(--panel2); color:#fff}
+  tr:nth-child(even) td{background:#13161d}
+  .tag{
+    display:inline-block; font-size:11.5px; padding:1px 8px; border-radius:999px;
+    margin-right:4px; font-family:monospace;
+  }
+  .t-orch{background:#2a2147;color:#c9b6ff}
+  .t-search{background:#14304a;color:#8fc9ff}
+  .t-stylist{background:#3a2147;color:#f0a6e8}
+  .t-order{background:#14322a;color:#7fe0bc}
+  .step{
+    counter-increment:step; position:relative; padding-left:46px; margin:14px 0;
+  }
+  .step::before{
+    content:counter(step); position:absolute; left:0; top:0;
+    width:30px; height:30px; background:var(--accent); color:#0d1018;
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-weight:bold; font-size:14px;
+  }
+  .steps{counter-reset:step}
+  footer{
+    text-align:center; color:var(--muted); font-size:13px;
+    margin-top:70px; padding-top:24px; border-top:1px solid var(--border);
+  }
+  .pill{font-size:12px;color:var(--muted)}
+  .legend{font-size:12.5px;color:var(--muted);margin:6px 0 18px}
+  .legend span{margin-right:14px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>🧠 Giải thích chi tiết Source Code AI</h1>
+  <p><b>Fashion AI Agent</b> — Hệ thống AI đa tác tử (multi-agent) cho cửa hàng thời trang ToRoMe Store</p>
+  <p class="pill">Thư mục phân tích: <code class="inline">fashion-ai-agent/</code> · Ngày tạo: 22/05/2026</p>
+  <div>
+    <span class="badge">Python 3</span>
+    <span class="badge">FastAPI</span>
+    <span class="badge">OpenAI Function Calling</span>
+    <span class="badge">Google A2A SDK</span>
+    <span class="badge">ReAct Loop</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="toc">
+  <h3>📑 Mục lục</h3>
+  <ol>
+    <li><a href="#tongquan">Tổng quan — AI này là gì, làm gì?</a></li>
+    <li><a href="#luong">Luồng xử lý 1 câu hỏi (end-to-end)</a></li>
+    <li><a href="#khainiem">4 khái niệm AI cốt lõi cần hiểu trước</a></li>
+    <li><a href="#nentang">Tầng nền tảng — <code class="inline">shared/base_agent/</code></a>
+      <ol>
+        <li><a href="#skill">skill.py — Định nghĩa một "kỹ năng"</a></li>
+        <li><a href="#agent">agent.py — "Agent" chứa các kỹ năng</a></li>
+        <li><a href="#memory">memory.py — Bộ nhớ hội thoại</a></li>
+        <li><a href="#executor">executor.py — ⭐ Trái tim AI: vòng lặp ReAct</a></li>
+      </ol>
+    </li>
+    <li><a href="#orchestrator">Orchestrator — Bộ điều phối trung tâm</a>
+      <ol>
+        <li><a href="#routing">routing_agent.py — Chọn agent bằng LLM</a></li>
+        <li><a href="#planning">planning_agent.py — Lập kế hoạch đa bước</a></li>
+        <li><a href="#executor2">plan_executor.py — Thực thi kế hoạch</a></li>
+        <li><a href="#conversation">conversation.py — Quản lý lịch sử thông minh</a></li>
+      </ol>
+    </li>
+    <li><a href="#workers">3 Agent chuyên môn (Search / Stylist / Order)</a></li>
+    <li><a href="#prompt">Các Prompt — "linh hồn" điều khiển LLM</a></li>
+    <li><a href="#bug">⚠️ Bug &amp; điểm cần lưu ý (đã kiểm tra kỹ)</a></li>
+  </ol>
+</div>
+
+<p class="legend">
+  <b>Quy ước màu code:</b>
+  <span><span class="kw">■</span> từ khóa</span>
+  <span><span class="str">■</span> chuỗi</span>
+  <span><span class="num">■</span> số</span>
+  <span><span class="fn">■</span> hàm</span>
+  <span><span class="com">■</span> chú thích</span>
+</p>
+
+<!-- ====================================================== -->
+<h2 id="tongquan">1. Tổng quan — AI này là gì, làm gì?</h2>
+
+<p>
+Đây <b>không phải một con chatbot đơn lẻ</b>. Nó là một <b>hệ thống đa tác tử</b>
+(multi-agent system): nhiều "nhân viên AI" nhỏ, mỗi người giỏi một việc, phối hợp
+với nhau để phục vụ khách mua quần áo.
+</p>
+
+<p>Hệ thống có <b>4 agent</b>, mỗi agent chạy như một dịch vụ (server) riêng biệt:</p>
+
+<table>
+  <tr><th>Agent</th><th>Cổng</th><th>Vai trò</th><th>Ví dụ câu hỏi xử lý</th></tr>
+  <tr>
+    <td><span class="tag t-orch">Orchestrator</span></td>
+    <td>8000</td>
+    <td>Bộ não điều phối. Nhận câu hỏi của khách, quyết định giao việc cho ai.</td>
+    <td>Mọi câu hỏi đều vào đây trước</td>
+  </tr>
+  <tr>
+    <td><span class="tag t-search">Search Agent</span></td>
+    <td>8001</td>
+    <td>Tìm sản phẩm trong kho bằng tìm kiếm ngữ nghĩa (vector search).</td>
+    <td>"Tìm áo khoác đen cho tôi"</td>
+  </tr>
+  <tr>
+    <td><span class="tag t-stylist">Stylist Agent</span></td>
+    <td>8002</td>
+    <td>Stylist AI — tư vấn phối đồ thành bộ outfit hoàn chỉnh.</td>
+    <td>"Phối đồ đi phỏng vấn cho tôi"</td>
+  </tr>
+  <tr>
+    <td><span class="tag t-order">Order Agent</span></td>
+    <td>8003</td>
+    <td>Xử lý giỏ hàng, tạo đơn, sinh link thanh toán VNPay.</td>
+    <td>"Thêm áo này vào giỏ", "Thanh toán"</td>
+  </tr>
+</table>
+
+<div class="explain">
+<b>Cách hình dung dễ nhất:</b> Orchestrator giống <b>quản lý cửa hàng</b>. Khách hỏi gì,
+quản lý nghe xong rồi gọi đúng nhân viên: nhân viên kho (Search), stylist (Stylist),
+hoặc thu ngân (Order). Quản lý không tự trả lời — luôn giao việc cho chuyên viên.
+</div>
+
+<h4>Các công nghệ chính</h4>
+<ul>
+  <li><b>FastAPI</b> — framework web để mỗi agent chạy thành 1 server HTTP.</li>
+  <li><b>OpenAI (LLM) + Function Calling</b> — "bộ não" suy luận; LLM tự quyết định gọi "công cụ" (tool) nào.</li>
+  <li><b>Google A2A SDK</b> (Agent-to-Agent) — giao thức chuẩn để các agent "nói chuyện" với nhau qua HTTP.</li>
+  <li><b>Backend Spring Boot</b> (cổng 9000) — nơi chứa dữ liệu thật: sản phẩm, giỏ hàng, đơn hàng.</li>
+</ul>
+
+<!-- ====================================================== -->
+<h2 id="luong">2. Luồng xử lý 1 câu hỏi (end-to-end)</h2>
+
+<p>Ví dụ khách gõ: <i>"Tìm áo sơ mi trắng và thêm vào giỏ"</i>. Đây là hành trình câu hỏi đi qua hệ thống:</p>
+
+<div class="flow">
+Frontend (React, cổng 3000)
+   │  POST /chat   { user_id, message }
+   ▼
+┌─ ORCHESTRATOR (8000) ────────────────────────────────────────┐
+│  1. main.py  → endpoint /chat nhận request                    │
+│  2. SkillBasedExecutor._tool_calling_loop()  ← vòng lặp ReAct  │
+│  3. LLM đọc câu hỏi + nhìn các tool → quyết định gọi tool nào: │
+│        • route_to_agent      (việc đơn giản, 1 agent)          │
+│        • plan_and_execute    (việc phức tạp, nhiều bước)       │
+│        • get_conversation_history                              │
+│  4. "Tìm ... VÀ thêm giỏ" = 2 bước → gọi plan_and_execute      │
+│        ├─ PlanningAgent: tạo kế hoạch SEQUENTIAL               │
+│        │     Bước 1: Search Agent   Bước 2: Order Agent        │
+│        └─ PlanExecutor: chạy từng bước, truyền dữ liệu qua lại │
+└───────────────┬───────────────────────────────┬──────────────┘
+                │ A2A send_message              │ A2A send_message
+                ▼                               ▼
+        ┌─ SEARCH AGENT (8001) ─┐       ┌─ ORDER AGENT (8003) ─┐
+        │ ReAct loop riêng       │       │ ReAct loop riêng      │
+        │ → tool search_products │       │ → tool add_to_cart    │
+        └──────────┬─────────────┘       └──────────┬────────────┘
+                   │ HTTP                           │ HTTP
+                   ▼                                ▼
+        ┌──────────────── BACKEND Spring Boot (9000) ───────────┐
+        │  /api/products/vector-search   /api/cart/items   ...  │
+        │  PostgreSQL  +  Elasticsearch (vector)                │
+        └───────────────────────────────────────────────────────┘
+</div>
+
+<p>
+Điểm quan trọng: <b>mỗi agent (cả orchestrator lẫn worker) đều có một "vòng lặp ReAct"
+riêng</b>. Tức là bên trong Search Agent cũng có một LLM khác tự suy nghĩ và gọi tool.
+Nên hệ thống thực chất là <b>"LLM gọi LLM"</b> nhiều tầng.
+</p>
+
+<!-- ====================================================== -->
+<h2 id="khainiem">3. Bốn khái niệm AI cốt lõi cần hiểu trước</h2>
+
+<h4>① LLM &amp; Function Calling (gọi hàm)</h4>
+<p>
+LLM (như GPT) bình thường chỉ sinh ra <i>chữ</i>. "Function calling" cho phép ta đưa cho
+LLM một <b>danh sách công cụ</b> (mỗi công cụ có tên + mô tả + tham số). LLM đọc câu hỏi,
+nếu thấy cần dùng công cụ, nó trả về <b>"hãy gọi hàm <code class="inline">search_products</code>
+với query='áo trắng'"</b>. Code của ta thực thi hàm đó rồi đưa kết quả lại cho LLM.
+</p>
+
+<h4>② Vòng lặp ReAct (Reason + Act = Suy luận + Hành động)</h4>
+<p>
+Đây là pattern AI then chốt của cả dự án. Thay vì LLM trả lời 1 phát, nó lặp:
+</p>
+<div class="flow">  Nghĩ (Reason)  →  Gọi tool (Act)  →  Quan sát kết quả (Observe)  →  Nghĩ tiếp...
+  ↑________________________ lặp lại tối đa 8 lần ________________________↓
+                        →  Khi đủ thông tin: trả lời cuối cùng</div>
+<p>Nhờ vậy AI có thể: tìm sản phẩm → thấy ID → dùng ID đó để thêm vào giỏ → xác nhận.</p>
+
+<h4>③ Kiến trúc Skill (kỹ năng)</h4>
+<p>
+Trong dự án này: <b>Agent = một cái hộp chứa các Skill</b>. Mỗi <b>Skill</b> là một năng lực
+cụ thể, gồm 3 thứ: (a) các <b>tool</b> mà LLM được phép gọi, (b) hàm <b>thực thi tool</b>,
+(c) đoạn <b>prompt hướng dẫn</b> LLM cách dùng skill này.
+</p>
+
+<h4>④ Giao thức A2A (Agent-to-Agent)</h4>
+<p>
+Mỗi agent công bố một <b>"Agent Card"</b> (danh thiếp) tại địa chỉ
+<code class="inline">/.well-known/agent.json</code>, ghi rõ "tôi tên gì, làm được gì".
+Orchestrator lúc khởi động sẽ <b>quét các danh thiếp này</b> để biết có những agent nào,
+rồi gửi việc cho chúng qua tin nhắn chuẩn A2A.
+</p>
+
+<!-- ====================================================== -->
+<h2 id="nentang">4. Tầng nền tảng — <code class="inline">shared/base_agent/</code></h2>
+<p>
+Đây là bộ khung dùng chung cho <b>cả 4 agent</b>. Hiểu 4 file này là hiểu 80% phần AI.
+</p>
+
+<!-- ---------- skill.py ---------- -->
+<h3 id="skill">4.1 — <code class="inline">skill.py</code>: Định nghĩa một "kỹ năng"</h3>
+
+<div class="filebar"><span class="dot"></span> shared/base_agent/skill.py</div>
+<pre><code><span class="ln">20</span><span class="dec">@dataclass</span>
+<span class="ln">21</span><span class="kw">class</span> <span class="fn">ToolDefinition</span>:
+<span class="ln">24</span>    name: <span class="kw">str</span>
+<span class="ln">25</span>    description: <span class="kw">str</span>
+<span class="ln">26</span>    parameters: <span class="kw">dict</span>
+<span class="ln">28</span>    <span class="kw">def</span> <span class="fn">to_openai_tool</span>(self) -> <span class="kw">dict</span>:
+<span class="ln">29</span>        <span class="kw">return</span> {
+<span class="ln">30</span>            <span class="str">"type"</span>: <span class="str">"function"</span>,
+<span class="ln">31</span>            <span class="str">"function"</span>: {
+<span class="ln">32</span>                <span class="str">"name"</span>: self.name,
+<span class="ln">33</span>                <span class="str">"description"</span>: self.description,
+<span class="ln">34</span>                <span class="str">"parameters"</span>: self.parameters,
+<span class="ln">35</span>            },
+<span class="ln">36</span>        }</code></pre>
+<div class="explain">
+<b><code class="inline">ToolDefinition</code></b> = mô tả 1 công cụ. Gồm <b>tên</b>, <b>mô tả</b>
+(LLM đọc mô tả này để biết khi nào dùng), và <b>parameters</b> (tham số, viết theo chuẩn JSON Schema).
+<ul>
+  <li><b>Dòng 28-36 <code class="inline">to_openai_tool()</code></b>: đóng gói lại đúng định dạng
+  mà OpenAI API yêu cầu. Đây là "phiên dịch" giữa code của ta và API của OpenAI.</li>
+</ul>
+</div>
+
+<pre><code><span class="ln">39</span><span class="dec">@dataclass</span>
+<span class="ln">40</span><span class="kw">class</span> <span class="fn">ToolResult</span>:
+<span class="ln">49</span>    content: <span class="kw">str</span> | <span class="kw">dict</span> | <span class="kw">list</span>   <span class="com"># trả về cho LLM "đọc"</span>
+<span class="ln">50</span>    data: <span class="kw">dict</span> | <span class="kw">None</span> = <span class="kw">None</span>      <span class="com"># dữ liệu có cấu trúc gửi cho frontend</span></code></pre>
+<div class="explain">
+<b><code class="inline">ToolResult</code></b> = kết quả khi chạy 1 tool. Tách làm 2 phần rất quan trọng:
+<ul>
+  <li><b><code class="inline">content</code></b>: phần văn bản/JSON đưa <i>ngược lại cho LLM</i> để nó "quan sát" và suy luận tiếp.</li>
+  <li><b><code class="inline">data</code></b>: dữ liệu thô có cấu trúc (vd: danh sách sản phẩm, đơn hàng) — gửi thẳng cho
+  giao diện hiển thị, <i>không</i> bắt LLM xử lý lại. Tách 2 luồng này giúp giao diện hiện đúng thẻ sản phẩm.</li>
+</ul>
+</div>
+
+<pre><code><span class="ln">53</span><span class="kw">class</span> <span class="fn">Skill</span>(ABC):                       <span class="com"># lớp trừu tượng — bắt buộc lớp con cài đặt</span>
+<span class="ln">63</span>    <span class="dec">@property</span>
+<span class="ln">64</span>    <span class="dec">@abstractmethod</span>
+<span class="ln">65</span>    <span class="kw">def</span> <span class="fn">id</span>(self) -> <span class="kw">str</span>: ...        <span class="com"># mã skill (vd "product-search")</span>
+<span class="ln">68</span>    <span class="kw">def</span> <span class="fn">name</span>(self) -> <span class="kw">str</span>: ...      <span class="com"># tên hiển thị</span>
+<span class="ln">72</span>    <span class="kw">def</span> <span class="fn">description</span>(self): ...      <span class="com"># mô tả — agent khác đọc để biết nên gọi không</span>
+<span class="ln">85</span>    <span class="dec">@abstractmethod</span>
+<span class="ln">86</span>    <span class="kw">def</span> <span class="fn">get_tools</span>(self) -> <span class="kw">list</span>[ToolDefinition]: ...
+<span class="ln">90</span>    <span class="dec">@abstractmethod</span>
+<span class="ln">91</span>    <span class="kw">async def</span> <span class="fn">execute_tool</span>(self, tool_name, args) -> ToolResult: ...
+<span class="ln">97</span>    <span class="dec">@abstractmethod</span>
+<span class="ln">98</span>    <span class="kw">def</span> <span class="fn">get_prompt_instructions</span>(self) -> <span class="kw">str</span>: ...</code></pre>
+<div class="explain">
+<b><code class="inline">Skill</code> là một "hợp đồng"</b> (<code class="inline">ABC</code> = Abstract Base Class).
+Bất kỳ skill cụ thể nào (Search, Order, Stylist...) <b>bắt buộc</b> phải cài đặt đủ:
+<ul>
+  <li><b><code class="inline">id / name / description</code></b> — thông tin nhận dạng (đưa lên Agent Card).</li>
+  <li><b><code class="inline">get_tools()</code></b> — khai báo danh sách tool LLM được dùng.</li>
+  <li><b><code class="inline">execute_tool()</code></b> — code thật chạy khi LLM gọi tool. (<code class="inline">async</code> = chạy bất đồng bộ, không chặn.)</li>
+  <li><b><code class="inline">get_prompt_instructions()</code></b> — đoạn hướng dẫn nhét vào system prompt.</li>
+</ul>
+Đây chính là <b>"khuôn"</b>. Nhờ có khuôn này, thêm một agent mới chỉ là viết một class Skill mới.
+</div>
+
+<!-- ---------- agent.py ---------- -->
+<h3 id="agent">4.2 — <code class="inline">agent.py</code>: "Agent" là cái hộp chứa Skill</h3>
+
+<div class="filebar"><span class="dot"></span> shared/base_agent/agent.py</div>
+<pre><code><span class="ln">21</span><span class="kw">class</span> <span class="fn">BaseAgent</span>:
+<span class="ln">24</span>    <span class="kw">def</span> <span class="fn">__init__</span>(self, name, description, version=<span class="str">"0.1.0"</span>):
+<span class="ln">28</span>        self._skills: <span class="kw">dict</span>[<span class="kw">str</span>, Skill] = {}   <span class="com"># kho skill, tra theo id</span>
+<span class="ln">32</span>    <span class="kw">def</span> <span class="fn">register_skill</span>(self, skill):
+<span class="ln">33</span>        self._skills[skill.id] = skill            <span class="com"># đăng ký 1 skill vào hộp</span>
+<span class="ln">42</span>    <span class="kw">def</span> <span class="fn">find_skill_for_tool</span>(self, tool_name):     <span class="com"># tool này thuộc skill nào?</span>
+<span class="ln">44</span>        <span class="kw">for</span> skill <span class="kw">in</span> self._skills.values():
+<span class="ln">45</span>            <span class="kw">for</span> tool_def <span class="kw">in</span> skill.get_tools():
+<span class="ln">46</span>                <span class="kw">if</span> tool_def.name == tool_name:
+<span class="ln">47</span>                    <span class="kw">return</span> skill
+<span class="ln">48</span>        <span class="kw">return</span> <span class="kw">None</span></code></pre>
+<div class="explain">
+<ul>
+  <li><b>Dòng 32-33</b>: <code class="inline">register_skill</code> — gắn một skill vào agent.</li>
+  <li><b>Dòng 42-48 <code class="inline">find_skill_for_tool</code></b>: rất quan trọng cho ReAct loop.
+  Khi LLM nói "gọi tool X", agent dùng hàm này để <b>tìm xem skill nào sở hữu tool X</b>, rồi giao việc cho đúng skill.</li>
+</ul>
+</div>
+
+<pre><code><span class="ln">52</span>    <span class="kw">def</span> <span class="fn">get_all_openai_tools</span>(self) -> <span class="kw">list</span>[<span class="kw">dict</span>]:
+<span class="ln">53</span>        seen: <span class="kw">set</span>[<span class="kw">str</span>] = <span class="kw">set</span>()
+<span class="ln">55</span>        <span class="kw">for</span> skill <span class="kw">in</span> self._skills.values():
+<span class="ln">56</span>            <span class="kw">for</span> t <span class="kw">in</span> skill.get_openai_tools():
+<span class="ln">57</span>                name = t[<span class="str">"function"</span>][<span class="str">"name"</span>]
+<span class="ln">58</span>                <span class="kw">if</span> name <span class="kw">not in</span> seen:        <span class="com"># lọc trùng tên tool</span>
+<span class="ln">59</span>                    seen.add(name)
+<span class="ln">60</span>                    tools.append(t)
+<span class="ln">61</span>        <span class="kw">return</span> tools
+
+<span class="ln">65</span>    <span class="kw">def</span> <span class="fn">build_system_prompt</span>(self) -> <span class="kw">str</span>:
+<span class="ln">66</span>        parts = [<span class="str">f"You are the {self.name} for ToRoMe Store..."</span>]
+<span class="ln">67</span>        <span class="kw">for</span> skill <span class="kw">in</span> self._skills.values():
+<span class="ln">68</span>            parts.append(<span class="str">f"\n## Skill: {skill.name}\n{skill.get_prompt_instructions()}"</span>)
+<span class="ln">69</span>        parts.append(<span class="str">"...Always use the provided tools... Never answer from your own knowledge..."</span>)
+<span class="ln">73</span>        <span class="kw">return</span> <span class="str">"\n"</span>.join(parts)</code></pre>
+<div class="explain">
+<ul>
+  <li><b><code class="inline">get_all_openai_tools()</code></b>: gom <i>toàn bộ</i> tool của mọi skill thành 1 danh sách
+  để đưa cho LLM. Dùng <code class="inline">seen</code> (tập hợp) để <b>loại tool trùng tên</b> — vì cả
+  Search Skill lẫn Order Skill đều có tool <code class="inline">search_products</code>.</li>
+  <li><b><code class="inline">build_system_prompt()</code></b>: ghép "lời tự giới thiệu" của agent + hướng dẫn của
+  từng skill thành <b>một system prompt lớn</b>. Câu chốt dòng 69 — <i>"Luôn dùng tool, đừng tự bịa
+  về sản phẩm/đơn hàng"</i> — là cơ chế <b>chống AI bịa thông tin</b> (hallucination).</li>
+</ul>
+</div>
+
+<pre><code><span class="ln">77</span>    <span class="kw">def</span> <span class="fn">build_agent_card</span>(self, host, port) -> AgentCard:
+<span class="ln">78</span>        <span class="kw">return</span> AgentCard(
+<span class="ln">79</span>            name=self.name, description=self.description,
+<span class="ln">81</span>            url=<span class="str">f"{host}:{port}/"</span>, version=self.version,
+<span class="ln">83</span>            capabilities=AgentCapabilities(streaming=<span class="kw">False</span>, push_notifications=<span class="kw">False</span>),
+<span class="ln">84</span>            skills=[s.to_a2a_skill() <span class="kw">for</span> s <span class="kw">in</span> self._skills.values()],
+<span class="ln">85</span>            default_input_modes=[<span class="str">"text/plain"</span>, <span class="str">"application/json"</span>],
+<span class="ln">86</span>        )</code></pre>
+<div class="explain">
+<b><code class="inline">build_agent_card()</code></b> tạo ra "tấm danh thiếp A2A". Đây là thứ agent khác
+(Orchestrator) đọc được để biết agent này tên gì, có skill gì. <code class="inline">streaming=False</code>
+nghĩa là trả lời 1 lần trọn gói, không trả từng chữ.
+</div>
+
+<!-- ---------- memory.py ---------- -->
+<h3 id="memory">4.3 — <code class="inline">memory.py</code>: Bộ nhớ hội thoại</h3>
+<p>AI cần "nhớ" khách vừa nói gì, vừa tìm được gì. File này lo việc đó.</p>
+
+<div class="filebar"><span class="dot"></span> shared/base_agent/memory.py</div>
+<pre><code><span class="ln">39</span><span class="kw">class</span> <span class="fn">AgentMemory</span>:           <span class="com"># bộ nhớ cho MỘT phiên trò chuyện</span>
+<span class="ln">45</span>    <span class="kw">def</span> <span class="fn">__init__</span>(self, session_id, max_history=<span class="num">10</span>):
+<span class="ln">48</span>        self.messages: <span class="kw">list</span>[Message] = []        <span class="com"># lịch sử hội thoại</span>
+<span class="ln">49</span>        self.tool_calls: <span class="kw">list</span>[ToolCall] = []     <span class="com"># nhật ký các tool đã gọi</span>
+<span class="ln">50</span>        self.collected_data: <span class="kw">dict</span> = {}           <span class="com"># dữ liệu gom được (sản phẩm, đơn...)</span>
+<span class="ln">116</span>    <span class="kw">def</span> <span class="fn">_trim_history</span>(self):                  <span class="com"># cắt bớt cho khỏi phình</span>
+<span class="ln">119</span>        <span class="kw">if</span> <span class="kw">len</span>(self.messages) > self.max_history * <span class="num">2</span>:
+<span class="ln">120</span>            self.messages = self.messages[-self.max_history * <span class="num">2</span>:]</code></pre>
+<div class="explain">
+<b><code class="inline">AgentMemory</code></b> giữ 3 thứ cho mỗi phiên: lịch sử tin nhắn, danh sách tool đã gọi,
+và dữ liệu thu thập được.
+<ul>
+  <li><b><code class="inline">_trim_history()</code></b> (dòng 116-120): chỉ giữ lại <code class="inline">max_history × 2</code>
+  tin nhắn gần nhất (mặc định 20). Lý do: nếu nhồi cả lịch sử dài vào LLM sẽ <b>tốn tiền và quá giới hạn token</b>.</li>
+</ul>
+</div>
+
+<pre><code><span class="ln">63</span>    <span class="kw">def</span> <span class="fn">add_tool_call</span>(self, name, arguments, result, success=<span class="kw">True</span>):
+<span class="ln">65</span>        self.tool_calls.append(ToolCall(name=name, arguments=arguments, ...))
+<span class="ln">67</span>        self.messages.append(
+<span class="ln">68</span>            Message(role=ASSISTANT, content=<span class="str">f"Calling tool: {name}"</span>, tool_name=name)
+<span class="ln">69</span>        )
+
+<span class="ln">123</span><span class="kw">class</span> <span class="fn">MemoryStore</span>:        <span class="com"># quản lý bộ nhớ của TẤT CẢ các phiên</span>
+<span class="ln">132</span>    <span class="kw">def</span> <span class="fn">get_or_create</span>(self, session_id, max_history=<span class="num">10</span>):
+<span class="ln">134</span>        <span class="kw">if</span> session_id <span class="kw">not in</span> self._store:
+<span class="ln">135</span>            self._store[session_id] = AgentMemory(...)   <span class="com"># mỗi khách 1 bộ nhớ riêng</span>
+<span class="ln">136</span>        <span class="kw">return</span> self._store[session_id]
+<span class="ln">155</span>    <span class="kw">def</span> <span class="fn">cleanup_old_sessions</span>(self, max_age_seconds=<span class="num">3600</span>):  <span class="com"># dọn phiên cũ > 1 giờ</span></code></pre>
+<div class="explain">
+<ul>
+  <li><b><code class="inline">MemoryStore</code></b> là "tủ hồ sơ" — ánh xạ <code class="inline">session_id → AgentMemory</code>.
+  Mỗi khách có ngăn riêng nên hội thoại không lẫn vào nhau.</li>
+  <li><b>Lưu ý:</b> bộ nhớ này nằm <b>trong RAM</b> (in-memory). Server tắt là <b>mất sạch</b>.
+  <code class="inline">cleanup_old_sessions</code> tự xóa phiên cũ hơn 1 tiếng để khỏi tràn RAM.</li>
+</ul>
+</div>
+
+<!-- ---------- executor.py ---------- -->
+<h3 id="executor">4.4 — <code class="inline">executor.py</code>: ⭐ TRÁI TIM của AI — vòng lặp ReAct</h3>
+<p>
+Đây là <b>file quan trọng nhất</b>. Mọi agent đều dùng chung executor này để chạy vòng lặp
+"suy luận ↔ gọi tool". Ta đi <b>từng dòng</b>.
+</p>
+
+<div class="filebar"><span class="dot"></span> shared/base_agent/executor.py — phần khởi tạo</div>
+<pre><code><span class="ln">34</span><span class="com"># Kho bộ nhớ toàn cục — dùng chung cho mọi executor trong cùng tiến trình</span>
+<span class="ln">35</span>_memory_store = MemoryStore()
+
+<span class="ln">38</span><span class="kw">class</span> <span class="fn">SkillBasedExecutor</span>(AgentExecutor):
+<span class="ln">41</span>    <span class="kw">def</span> <span class="fn">__init__</span>(self, agent, openai_client, model, max_memory=<span class="num">10</span>):
+<span class="ln">42</span>        self._agent = agent              <span class="com"># agent (chứa các skill)</span>
+<span class="ln">43</span>        self._openai = openai_client     <span class="com"># client gọi API OpenAI</span>
+<span class="ln">44</span>        self._model = model              <span class="com"># tên model, vd "gpt-4o"</span></code></pre>
+
+<h4>Hàm <code class="inline">execute()</code> — điểm vào khi nhận 1 yêu cầu A2A</h4>
+<pre><code><span class="ln">47</span>    <span class="kw">async def</span> <span class="fn">execute</span>(self, context, event_queue):
+<span class="ln">48</span>        query = context.get_user_input()              <span class="com"># lấy câu hỏi của khách</span>
+<span class="ln">49</span>        session_id = context.session_id <span class="kw">or</span> <span class="str">"default"</span>
+<span class="ln">54</span>        memory = _memory_store.get_or_create(session_id, ...)  <span class="com"># lấy bộ nhớ phiên</span>
+<span class="ln">55</span>        memory.add_user_message(query)                <span class="com"># lưu câu hỏi vào bộ nhớ</span>
+<span class="ln">58</span>        <span class="kw">for</span> skill <span class="kw">in</span> self._agent.skills:            <span class="com"># đưa tin nhắn cho skill</span>
+<span class="ln">59</span>            <span class="kw">if</span> <span class="fn">hasattr</span>(skill, <span class="str">"set_user_message"</span>):     <span class="com"># để skill bóc JWT token</span>
+<span class="ln">60</span>                skill.set_user_message(query)
+<span class="ln">67</span>        updater = TaskUpdater(event_queue, task.id, task.context_id)
+<span class="ln">70</span>        <span class="kw">await</span> updater.update_status(TaskState.working, ...)  <span class="com"># báo "đang xử lý"</span>
+<span class="ln">79</span>        final_text, collected_data = <span class="kw">await</span> self._tool_calling_loop(query, memory)
+<span class="ln">82</span>        memory.add_assistant_message(final_text)      <span class="com"># lưu câu trả lời</span>
+<span class="ln">93</span>        parts = [Part(root=TextPart(text=final_text))]      <span class="com"># phần chữ</span>
+<span class="ln">94</span>        <span class="kw">if</span> collected_data:
+<span class="ln">95</span>            parts.append(Part(root=DataPart(data=collected_data)))  <span class="com"># phần dữ liệu</span>
+<span class="ln">97</span>        <span class="kw">await</span> updater.add_artifact(parts)              <span class="com"># gửi kết quả về</span>
+<span class="ln">98</span>        <span class="kw">await</span> updater.complete()                       <span class="com"># báo "xong"</span></code></pre>
+<div class="explain">
+<code class="inline">execute()</code> là "lớp vỏ" theo chuẩn A2A SDK. Nó: <b>(1)</b> lấy câu hỏi,
+<b>(2)</b> nạp bộ nhớ phiên, <b>(3)</b> báo trạng thái "đang xử lý" cho client thấy,
+<b>(4)</b> gọi <code class="inline">_tool_calling_loop()</code> — nơi mọi việc thật sự diễn ra,
+<b>(5)</b> đóng gói kết quả thành 2 phần: <code class="inline">TextPart</code> (chữ) +
+<code class="inline">DataPart</code> (dữ liệu sản phẩm/đơn hàng).
+<br><br>
+Dòng 58-60 đáng chú ý: trước khi xử lý, executor đưa câu hỏi cho mỗi skill để skill nào cần thì
+<b>tự bóc tách JWT token</b> (dùng cho gọi backend có xác thực).
+</div>
+
+<h4>⭐ Hàm <code class="inline">_tool_calling_loop()</code> — chính là vòng lặp ReAct</h4>
+<div class="filebar"><span class="dot"></span> executor.py — _tool_calling_loop()</div>
+<pre><code><span class="ln">109</span>    <span class="kw">async def</span> <span class="fn">_tool_calling_loop</span>(self, user_text, memory):
+<span class="ln">112</span>        system_prompt = self._agent.build_system_prompt()    <span class="com"># prompt hệ thống</span>
+<span class="ln">115</span>        <span class="kw">if</span> memory.messages:                               <span class="com"># nếu có lịch sử</span>
+<span class="ln">116</span>            memory_context = self._build_memory_context(memory)
+<span class="ln">117</span>            system_prompt += <span class="str">f"\n\n## Conversation History\n{memory_context}"</span>
+<span class="ln">119</span>        messages = [
+<span class="ln">120</span>            {<span class="str">"role"</span>: <span class="str">"system"</span>, <span class="str">"content"</span>: system_prompt},   <span class="com"># vai hệ thống</span>
+<span class="ln">121</span>            {<span class="str">"role"</span>: <span class="str">"user"</span>,   <span class="str">"content"</span>: user_text},      <span class="com"># vai người dùng</span>
+<span class="ln">122</span>        ]
+<span class="ln">123</span>        tools = self._agent.get_all_openai_tools()        <span class="com"># danh sách tool</span>
+<span class="ln">124</span>        tool_was_called = <span class="kw">False</span></code></pre>
+<div class="explain">
+<b>Chuẩn bị trước vòng lặp:</b> ghép system prompt (lời giới thiệu + hướng dẫn skill + lịch sử),
+tạo danh sách <code class="inline">messages</code> ban đầu, lấy danh sách tool. Biến cờ
+<code class="inline">tool_was_called</code> để biết LLM có chịu gọi tool không.
+</div>
+
+<pre><code><span class="ln">126</span>        <span class="kw">for</span> iteration <span class="kw">in</span> <span class="fn">range</span>(<span class="num">8</span>):                  <span class="com"># ⭐ LẶP TỐI ĐA 8 LẦN</span>
+<span class="ln">129</span>            response = <span class="kw">await</span> self._openai.chat.completions.create(
+<span class="ln">130</span>                model=self._model,
+<span class="ln">131</span>                messages=messages,
+<span class="ln">132</span>                tools=tools,
+<span class="ln">133</span>                tool_choice=<span class="str">"auto"</span>,                   <span class="com"># để LLM tự quyết gọi tool hay không</span>
+<span class="ln">134</span>            )
+<span class="ln">135</span>            choice = response.choices[<span class="num">0</span>]
+<span class="ln">136</span>            messages.append(choice.message)               <span class="com"># lưu lời LLM vào hội thoại</span></code></pre>
+<div class="explain">
+<b>Bắt đầu vòng lặp ReAct.</b> Mỗi vòng: gọi API OpenAI 1 lần.
+<code class="inline">tool_choice="auto"</code> = trao quyền cho LLM tự quyết. Giới hạn <b>8 vòng</b> để
+tránh AI "kẹt vòng lặp vô tận" (gọi tool mãi không chịu trả lời).
+</div>
+
+<pre><code><span class="ln">138</span>            <span class="kw">if</span> choice.finish_reason == <span class="str">"stop"</span>:          <span class="com"># LLM nói: "tôi xong rồi"</span>
+<span class="ln">139</span>                <span class="kw">if</span> iteration == <span class="num">0</span> <span class="kw">and</span> <span class="kw">not</span> tool_was_called:
+<span class="ln">140</span>                    logger.warning(<span class="str">"llm_skipped_tools"</span>, ...)
+<span class="ln">141</span>                    fallback = <span class="kw">await</span> self._direct_fallback(user_text, memory)
+<span class="ln">142</span>                    <span class="kw">if</span> fallback:
+<span class="ln">143</span>                        <span class="kw">return</span> fallback, memory.collected_data
+<span class="ln">144</span>                <span class="kw">break</span>                              <span class="com"># thoát vòng lặp</span></code></pre>
+<div class="explain">
+<b>Trường hợp LLM trả lời thẳng (không gọi tool):</b>
+<ul>
+  <li>Nếu đó là <b>vòng đầu tiên</b> và LLM <b>chưa hề gọi tool nào</b> → đáng nghi (vd LLM tự bịa
+  câu trả lời). Code kích hoạt <b><code class="inline">_direct_fallback</code></b>: tự ép chạy tool
+  đầu tiên với chính câu hỏi của khách.</li>
+  <li>Đây là <b>"lưới an toàn"</b> phòng trường hợp LLM lười/không hỗ trợ function calling tốt.</li>
+</ul>
+</div>
+
+<pre><code><span class="ln">146</span>            <span class="kw">if</span> choice.finish_reason == <span class="str">"tool_calls"</span> <span class="kw">and</span> choice.message.tool_calls:
+<span class="ln">147</span>                <span class="kw">for</span> tc <span class="kw">in</span> choice.message.tool_calls:    <span class="com"># LLM có thể gọi nhiều tool 1 lúc</span>
+<span class="ln">148</span>                    fn_name = tc.function.name
+<span class="ln">149</span>                    <span class="kw">try</span>:
+<span class="ln">150</span>                        args = json.loads(tc.function.arguments)  <span class="com"># tham số dạng JSON</span>
+<span class="ln">151</span>                    <span class="kw">except</span> json.JSONDecodeError:               <span class="com"># LLM trả JSON hỏng</span>
+<span class="ln">153</span>                        messages.append({<span class="str">"role"</span>:<span class="str">"tool"</span>, ..., <span class="str">"content"</span>:<span class="str">"Error parsing arguments."</span>})
+<span class="ln">155</span>                        <span class="kw">continue</span>
+<span class="ln">157</span>                    tool_was_called = <span class="kw">True</span>
+<span class="ln">158</span>                    skill = self._agent.find_skill_for_tool(fn_name)  <span class="com"># tool này của skill nào?</span>
+<span class="ln">159</span>                    <span class="kw">if</span> <span class="kw">not</span> skill:
+<span class="ln">161</span>                        messages.append({..., <span class="str">"content"</span>: <span class="str">f"Unknown tool: {fn_name}"</span>})
+<span class="ln">163</span>                        <span class="kw">continue</span></code></pre>
+<div class="explain">
+<b>Trường hợp LLM muốn gọi tool:</b>
+<ul>
+  <li>Dòng 147: LLM có thể yêu cầu gọi <b>nhiều tool cùng lúc</b> → duyệt từng cái.</li>
+  <li>Dòng 150-155: tham số do LLM sinh ra dạng chuỗi JSON → phải <code class="inline">json.loads</code>.
+  Nếu LLM trả JSON sai cú pháp, code <b>không sập</b> mà báo lỗi nhẹ rồi <code class="inline">continue</code>.</li>
+  <li>Dòng 158: dùng <code class="inline">find_skill_for_tool</code> tìm đúng skill sở hữu tool đó.</li>
+</ul>
+Đây là tinh thần xuyên suốt: <b>mọi lỗi đều được "nuốt" và biến thành thông báo gửi lại LLM</b>,
+không để cả hệ thống sập.
+</div>
+
+<pre><code><span class="ln">165</span>                    <span class="kw">try</span>:
+<span class="ln">166</span>                        result = <span class="kw">await</span> skill.execute_tool(fn_name, args)  <span class="com"># ⭐ CHẠY TOOL THẬT</span>
+<span class="ln">168</span>                        memory.add_tool_call(fn_name, args, result.content, success=<span class="kw">True</span>)
+<span class="ln">169</span>                        <span class="kw">if</span> result.data:
+<span class="ln">170</span>                            memory.update_collected_data(result.data)  <span class="com"># gom dữ liệu</span>
+<span class="ln">171</span>                    <span class="kw">except</span> Exception <span class="kw">as</span> e:                       <span class="com"># tool chạy lỗi</span>
+<span class="ln">173</span>                        memory.add_tool_call(fn_name, args, <span class="fn">str</span>(e), success=<span class="kw">False</span>)
+<span class="ln">175</span>                        messages.append({..., <span class="str">"content"</span>: <span class="str">f"Error: {str(e)}"</span>})
+<span class="ln">177</span>                        <span class="kw">continue</span>
+<span class="ln">178</span>                    <span class="kw">finally</span>:
+<span class="ln">180</span>                        <span class="kw">if</span> <span class="fn">hasattr</span>(skill, <span class="str">"cleanup"</span>):
+<span class="ln">181</span>                            skill.cleanup()                  <span class="com"># dọn dẹp (vd xóa JWT token)</span>
+<span class="ln">184</span>                    content = json.dumps(result.content, ...) <span class="kw">if</span> <span class="kw">not</span> isinstance(result.content, <span class="kw">str</span>) <span class="kw">else</span> result.content
+<span class="ln">189</span>                    messages.append({<span class="str">"role"</span>:<span class="str">"tool"</span>, <span class="str">"tool_call_id"</span>:tc.id, <span class="str">"content"</span>:content})</code></pre>
+<div class="explain">
+<b>Thực thi tool và đưa kết quả về (bước "Observe" của ReAct):</b>
+<ul>
+  <li>Dòng 166: <code class="inline">skill.execute_tool()</code> — đây là lúc code thật chạy (gọi backend, tìm sản phẩm...).</li>
+  <li>Dòng 168-170: ghi tool call vào bộ nhớ; nếu có <code class="inline">data</code> thì gom lại để gửi frontend.</li>
+  <li>Dòng 178-181 <code class="inline">finally</code>: <b>luôn</b> chạy <code class="inline">cleanup()</code> dù thành công hay lỗi
+  — quan trọng để xóa JWT token khỏi context, tránh rò rỉ giữa các request.</li>
+  <li>Dòng 189: nhét kết quả tool vào <code class="inline">messages</code> với <code class="inline">role:"tool"</code>.
+  → Vòng lặp tiếp theo, LLM sẽ "nhìn thấy" kết quả này và suy luận tiếp.</li>
+</ul>
+</div>
+
+<pre><code><span class="ln">193</span>        <span class="kw">return</span> self._extract_final_text(messages), memory.collected_data</code></pre>
+<div class="explain">
+Kết thúc vòng lặp: lấy câu trả lời cuối (dòng văn bản assistant gần nhất) + toàn bộ dữ liệu gom được.
+</div>
+
+<h4>Hàm phụ trợ <code class="inline">_build_memory_context()</code></h4>
+<pre><code><span class="ln">195</span>    <span class="kw">def</span> <span class="fn">_build_memory_context</span>(self, memory):
+<span class="ln">199</span>        <span class="kw">for</span> msg <span class="kw">in</span> memory.get_recent_messages(<span class="num">4</span>):     <span class="com"># 4 tin nhắn gần nhất</span>
+<span class="ln">200</span>            <span class="kw">if</span> msg.role.value == <span class="str">"user"</span>:     lines.append(<span class="str">f"User: {msg.content}"</span>)
+<span class="ln">202</span>            <span class="kw">elif</span> msg.role.value == <span class="str">"assistant"</span>: lines.append(<span class="str">f"Assistant: {msg.content}"</span>)
+<span class="ln">205</span>        <span class="kw">if</span> memory.tool_calls:                       <span class="com"># tóm tắt tool đã gọi</span>
+<span class="ln">207</span>            lines.append(memory.get_tool_call_summary())
+<span class="ln">209</span>        <span class="kw">if</span> memory.collected_data:                   <span class="com"># tóm tắt dữ liệu đã có</span>
+<span class="ln">211</span>            lines.append(memory.get_data_summary())</code></pre>
+<div class="explain">
+Biến bộ nhớ thành <b>một đoạn text ngắn</b> để nhét vào system prompt. Nhờ đó LLM "nhớ" được
+ngữ cảnh: khách vừa hỏi gì, đã tìm được sản phẩm nào — quan trọng cho câu kiểu <i>"thêm cái đó vào giỏ"</i>.
+</div>
+
+<!-- ====================================================== -->
+<h2 id="orchestrator">5. Orchestrator — Bộ điều phối trung tâm</h2>
+<p>
+Orchestrator là agent "đặc biệt": nó không gọi backend, mà <b>điều phối 3 worker agent</b>.
+Nó có <b>2 cơ chế</b> chạy song song bên trong: <b>Routing</b> (chọn 1 agent) và
+<b>Planning + Execution</b> (chia việc nhiều bước).
+</p>
+
+<h4><code class="inline">main.py</code> — khởi động orchestrator</h4>
+<div class="filebar"><span class="dot"></span> services/orchestrator/main.py — lifespan()</div>
+<pre><code><span class="ln">58</span>    agent_card_urls = [
+<span class="ln">59</span>        os.getenv(<span class="str">"...SEARCH_AGENT_CARD_URL"</span>, <span class="str">"http://search:8001/.well-known/agent.json"</span>),
+<span class="ln">60</span>        os.getenv(<span class="str">"...STYLIST_AGENT_CARD_URL"</span>, <span class="str">"http://stylist:8002/..."</span>),
+<span class="ln">61</span>        os.getenv(<span class="str">"...ORDER_AGENT_CARD_URL"</span>,   <span class="str">"http://order:8003/..."</span>),
+<span class="ln">62</span>    ]
+<span class="ln">66</span>    routing_agent = <span class="kw">await</span> RoutingAgent.create(agent_base_urls)  <span class="com"># quét 3 agent</span>
+<span class="ln">81</span>    orchestration_skill = OrchestrationSkill(routing_agent, planning_agent, ...)
+<span class="ln">88</span>    orchestrator_agent = BaseAgent(name=<span class="str">"Orchestrator"</span>, ...)
+<span class="ln">95</span>    orchestrator_agent.register_skill(orchestration_skill)
+<span class="ln">108</span>    skill_executor = SkillBasedExecutor(orchestrator_agent, openai_client, ...)</code></pre>
+<div class="explain">
+<code class="inline">lifespan()</code> chạy <b>1 lần khi server khởi động</b>:
+<ul>
+  <li>Dòng 66: <code class="inline">RoutingAgent.create()</code> — quét 3 agent con qua A2A để "biết mặt" chúng.</li>
+  <li>Dòng 81-95: tạo <code class="inline">OrchestrationSkill</code> rồi gắn vào một <code class="inline">BaseAgent</code>.
+  → Tức là <b>orchestrator cũng dùng đúng khung Skill/Agent/Executor như các agent khác</b>. Rất nhất quán.</li>
+</ul>
+</div>
+
+<h4>Endpoint <code class="inline">/chat</code> — cửa vào của toàn hệ thống</h4>
+<pre><code><span class="ln">161</span><span class="dec">@app.post(</span><span class="str">"/chat"</span><span class="dec">)</span>
+<span class="ln">162</span><span class="kw">async def</span> <span class="fn">chat</span>(request, authorization=Header(<span class="kw">None</span>)):
+<span class="ln">167</span>    <span class="kw">if</span> authorization <span class="kw">and</span> authorization.startswith(<span class="str">"Bearer "</span>):
+<span class="ln">168</span>        token = authorization[<span class="num">7</span>:]                  <span class="com"># bóc JWT token</span>
+<span class="ln">170</span>    session_id = request.session_id <span class="kw">or</span> request.user_id
+<span class="ln">171</span>    memory = _memory_store.get_or_create(session_id, ...)
+<span class="ln">189</span>    final_text, collected_data = <span class="kw">await</span> skill_executor._tool_calling_loop(
+<span class="ln">190</span>        <span class="str">f"{request.message} [user_id={request.user_id}]"</span>,   <span class="com"># gắn user_id vào câu hỏi</span>
+<span class="ln">191</span>        memory,
+<span class="ln">192</span>    )
+<span class="ln">207</span>    <span class="kw">return</span> ChatResponse(response=final_text, agent_used=..., data=collected_data)</code></pre>
+<div class="explain">
+<ul>
+  <li>Dòng 190: thủ thuật quan trọng — nhét <code class="inline">[user_id=X]</code> thẳng vào câu hỏi.
+  Sau này các agent dùng regex bóc <code class="inline">user_id</code> ra từ text. (Cách này đơn giản
+  nhưng hơi "thô" — xem mục Bug.)</li>
+  <li>Gọi thẳng <code class="inline">_tool_calling_loop()</code> → orchestrator chạy ReAct loop, LLM của nó
+  chọn tool <code class="inline">route_to_agent</code> / <code class="inline">plan_and_execute</code>.</li>
+</ul>
+</div>
+
+<!-- ---------- routing_agent.py ---------- -->
+<h3 id="routing">5.1 — <code class="inline">routing_agent.py</code>: Chọn agent bằng LLM</h3>
+
+<div class="filebar"><span class="dot"></span> services/orchestrator/routing_agent.py</div>
+<pre><code><span class="ln">54</span>    <span class="dec">@classmethod</span>
+<span class="ln">55</span>    <span class="kw">async def</span> <span class="fn">create</span>(cls, remote_agent_addresses):     <span class="com"># hàm "nhà máy" tạo RoutingAgent</span>
+<span class="ln">68</span>        <span class="kw">async with</span> httpx.AsyncClient(timeout=<span class="num">30</span>) <span class="kw">as</span> client:
+<span class="ln">69</span>            <span class="kw">for</span> address <span class="kw">in</span> remote_agent_addresses:
+<span class="ln">71</span>                card_resolver = A2ACardResolver(client, address)
+<span class="ln">72</span>                card = <span class="kw">await</span> card_resolver.get_agent_card()  <span class="com"># ⭐ đọc danh thiếp A2A</span>
+<span class="ln">73</span>                connection = RemoteAgentConnections(agent_card=card, agent_url=address)
+<span class="ln">74</span>                self.remote_agent_connections[card.name] = connection</code></pre>
+<div class="explain">
+<b>Khám phá agent (Agent Discovery):</b> với mỗi địa chỉ, gọi <code class="inline">get_agent_card()</code>
+để đọc "danh thiếp" → biết tên + skill của agent đó, rồi lưu một "đường dây kết nối"
+(<code class="inline">RemoteAgentConnections</code>).
+</div>
+
+<pre><code><span class="ln">84</span>        agent_info = []
+<span class="ln">85</span>        <span class="kw">for</span> card <span class="kw">in</span> self.cards.values():            <span class="com"># gom mô tả skill từng agent</span>
+<span class="ln">89</span>            <span class="kw">for</span> skill <span class="kw">in</span> (card.skills <span class="kw">or</span> []):
+<span class="ln">90</span>                skills_desc.append(<span class="str">f"  - {skill.name}: {skill.description}"</span>)
+<span class="ln">102</span>            agent_info.append(json.dumps(entry, ...))
+<span class="ln">103</span>        self._agents_roster = <span class="str">"\n"</span>.join(agent_info)   <span class="com"># "bảng phân công" cho LLM xem</span></code></pre>
+<div class="explain">
+Xây <b><code class="inline">_agents_roster</code></b> — một chuỗi mô tả "đội hình": agent nào,
+làm được gì, ví dụ gì. Chuỗi này sẽ được nhét vào prompt để <b>LLM tự đọc và chọn đúng agent</b>.
+</div>
+
+<pre><code><span class="ln">136</span>    <span class="kw">async def</span> <span class="fn">send_message</span>(self, agent_name, task):     <span class="com"># gửi việc cho 1 agent qua A2A</span>
+<span class="ln">151</span>        token_context = <span class="str">""</span>
+<span class="ln">152</span>        <span class="kw">if</span> <span class="fn">hasattr</span>(self, <span class="str">"_current_token"</span>) <span class="kw">and</span> self._current_token:
+<span class="ln">153</span>            token_context = <span class="str">f"\n\n[SYSTEM: JWT_TOKEN={self._current_token}]"</span>  <span class="com"># gắn token</span>
+<span class="ln">158</span>        payload = {<span class="str">"message"</span>: {<span class="str">"role"</span>:<span class="str">"user"</span>, <span class="str">"parts"</span>:[{<span class="str">"type"</span>:<span class="str">"text"</span>, <span class="str">"text"</span>: task + token_context}], ...}}
+<span class="ln">172</span>        response = <span class="kw">await</span> client.send_message(request)   <span class="com"># gọi agent con</span>
+<span class="ln">197</span>        text = self._extract_text_from_result(result)   <span class="com"># bóc phần chữ</span>
+<span class="ln">198</span>        data = self._extract_data_from_result(result)   <span class="com"># bóc phần dữ liệu</span>
+<span class="ln">200</span>        <span class="kw">return</span> {<span class="str">"text"</span>: text, <span class="str">"data"</span>: data}</code></pre>
+<div class="explain">
+<code class="inline">send_message()</code> = "đưa việc" cho 1 worker agent qua giao thức A2A. Lưu ý dòng 152-153:
+JWT token được nhúng vào text dưới dạng <code class="inline">[SYSTEM: JWT_TOKEN=...]</code> để agent con
+gọi backend có xác thực. Hai hàm <code class="inline">_extract_text/_extract_data_from_result</code> bóc
+2 phần (chữ + dữ liệu) ra khỏi cấu trúc phản hồi A2A.
+</div>
+
+<h4>⭐ Hàm <code class="inline">run()</code> — vòng lặp tool-calling để định tuyến</h4>
+<pre><code><span class="ln">255</span>    <span class="kw">async def</span> <span class="fn">run</span>(self, user_message, user_id, conversation_history, token=<span class="kw">None</span>):
+<span class="ln">265</span>        tools = [{ <span class="str">"type"</span>:<span class="str">"function"</span>, <span class="str">"function"</span>: {
+<span class="ln">269</span>            <span class="str">"name"</span>: <span class="str">"send_message"</span>,                <span class="com"># chỉ có DUY NHẤT 1 tool</span>
+<span class="ln">277</span>            ... <span class="str">"agent_name"</span> ... <span class="str">"task"</span> ... }}]
+<span class="ln">292</span>        messages = [{<span class="str">"role"</span>:<span class="str">"system"</span>, <span class="str">"content"</span>: self.root_instruction(user_id)}]
+<span class="ln">293</span>        messages.extend(conversation_history[-<span class="num">10</span>:])  <span class="com"># thêm 10 tin gần nhất</span>
+<span class="ln">294</span>        messages.append({<span class="str">"role"</span>:<span class="str">"user"</span>, <span class="str">"content"</span>: user_message})
+<span class="ln">299</span>        <span class="kw">for</span> iteration <span class="kw">in</span> <span class="fn">range</span>(<span class="num">6</span>):                  <span class="com"># lặp tối đa 6 lần</span>
+<span class="ln">301</span>            response = <span class="kw">await</span> self._openai.chat.completions.create(...)
+<span class="ln">307</span>            <span class="kw">except</span> Exception <span class="kw">as</span> e:                   <span class="com"># LLM lỗi →</span>
+<span class="ln">309</span>                <span class="kw">return</span> <span class="kw">await</span> self._keyword_fallback(user_message, user_id)
+<span class="ln">314</span>            <span class="kw">if</span> choice.finish_reason == <span class="str">"stop"</span>:
+<span class="ln">315</span>                <span class="kw">if</span> iteration == <span class="num">0</span> <span class="kw">and</span> agent_used <span class="kw">is</span> <span class="kw">None</span>:   <span class="com"># LLM không chịu định tuyến</span>
+<span class="ln">318</span>                    <span class="kw">return</span> <span class="kw">await</span> self._keyword_fallback(user_message, user_id)</code></pre>
+<div class="explain">
+<code class="inline">run()</code> là <b>một vòng lặp ReAct thu nhỏ</b>, nhưng chỉ có <b>1 tool duy nhất:
+<code class="inline">send_message</code></b>. LLM được prompt yêu cầu: "hãy gọi <code class="inline">send_message</code>
+với agent phù hợp". Nếu LLM lỗi (dòng 307) hoặc lười không gọi tool (dòng 315) →
+chuyển sang <b><code class="inline">_keyword_fallback</code></b> (định tuyến bằng từ khóa).
+</div>
+
+<pre><code><span class="ln">359</span>    <span class="kw">async def</span> <span class="fn">_keyword_fallback</span>(self, user_message, user_id):
+<span class="ln">361</span>        lower = user_message.lower()
+<span class="ln">365</span>        <span class="kw">for</span> card <span class="kw">in</span> self.cards.values():
+<span class="ln">367</span>            <span class="kw">for</span> skill <span class="kw">in</span> (card.skills <span class="kw">or</span> []):
+<span class="ln">368</span>                <span class="kw">for</span> tag <span class="kw">in</span> (skill.tags <span class="kw">or</span> []):
+<span class="ln">369</span>                    <span class="kw">if</span> tag.lower() <span class="kw">in</span> lower:  score += <span class="num">2</span>   <span class="com"># trùng tag: +2 điểm</span>
+<span class="ln">371</span>                <span class="kw">for</span> example <span class="kw">in</span> (skill.examples <span class="kw">or</span> []):     <span class="com"># trùng từ trong ví dụ: +1</span>
+<span class="ln">375</span>            <span class="kw">if</span> score > best_score:  best_agent = card.name</code></pre>
+<div class="explain">
+<b>Định tuyến dự phòng không cần LLM:</b> chấm điểm mỗi agent — câu khách trùng <i>tag</i> của skill
+được +2, trùng từ trong <i>ví dụ</i> được +1. Agent điểm cao nhất thắng. Đơn giản nhưng đảm bảo
+hệ thống <b>vẫn chạy được khi OpenAI gặp sự cố</b>.
+</div>
+
+<!-- ---------- planning_agent.py ---------- -->
+<h3 id="planning">5.2 — <code class="inline">planning_agent.py</code>: Lập kế hoạch đa bước</h3>
+<p>
+Khi yêu cầu phức tạp ("tìm X <b>và</b> thêm giỏ"), cần chia thành nhiều bước cho nhiều agent.
+PlanningAgent lo việc này, với <b>3 chế độ</b>:
+</p>
+<table>
+  <tr><th>Chế độ</th><th>Ý nghĩa</th><th>Ví dụ</th></tr>
+  <tr><td><code class="inline">SINGLE</code></td><td>1 agent, 1 bước</td><td>"tìm áo trắng"</td></tr>
+  <tr><td><code class="inline">SEQUENTIAL</code></td><td>Nhiều bước nối tiếp, kết quả bước trước truyền cho bước sau</td><td>"tìm áo trắng → thêm giỏ"</td></tr>
+  <tr><td><code class="inline">PARALLEL</code></td><td>Nhiều việc độc lập chạy song song</td><td>"tìm áo VÀ tìm quần"</td></tr>
+</table>
+
+<div class="filebar"><span class="dot"></span> services/orchestrator/planning_agent.py</div>
+<pre><code><span class="ln">40</span><span class="dec">@dataclass</span>
+<span class="ln">41</span><span class="kw">class</span> <span class="fn">ExecutionStep</span>:                <span class="com"># 1 bước trong kế hoạch</span>
+<span class="ln">44</span>    step_id: <span class="kw">str</span>
+<span class="ln">45</span>    agent_name: <span class="kw">str</span>                  <span class="com"># giao cho agent nào</span>
+<span class="ln">46</span>    task: <span class="kw">str</span>                        <span class="com"># làm gì</span>
+<span class="ln">47</span>    depends_on: <span class="kw">list</span>[<span class="kw">str</span>] = ...        <span class="com"># phụ thuộc bước nào</span>
+<span class="ln">51</span><span class="kw">class</span> <span class="fn">ExecutionPlan</span>:                <span class="com"># cả kế hoạch</span>
+<span class="ln">54</span>    mode: ExecutionMode
+<span class="ln">55</span>    steps: <span class="kw">list</span>[ExecutionStep]</code></pre>
+
+<pre><code><span class="ln">61</span>MULTI_AGENT_PATTERNS = {            <span class="com"># các mẫu regex nhận diện nhanh</span>
+<span class="ln">63</span>    <span class="str">r"find\s+(.+?)\s+and\s+(add to cart|...|thêm vào giỏ|mua)"</span>: {
+<span class="ln">64</span>        <span class="str">"mode"</span>: ExecutionMode.SEQUENTIAL,
+<span class="ln">66</span>        <span class="str">"steps"</span>: [
+<span class="ln">67</span>            {<span class="str">"agent"</span>: <span class="str">"Search Agent"</span>, <span class="str">"template"</span>: <span class="str">"Find {match_group_1}"</span>},
+<span class="ln">68</span>            {<span class="str">"agent"</span>: <span class="str">"Order Agent"</span>,  <span class="str">"template"</span>: <span class="str">"Add the best matching product to cart"</span>},
+<span class="ln">69</span>        ],
+<span class="ln">70</span>    }, ... }</code></pre>
+<div class="explain">
+<b><code class="inline">MULTI_AGENT_PATTERNS</code></b> = "đường tắt". Nếu câu khách khớp mẫu regex quen thuộc
+(vd "find X and add to cart") → tạo kế hoạch ngay <b>không cần gọi LLM</b> → nhanh + miễn phí.
+LLM chỉ dùng khi regex không khớp.
+</div>
+
+<h4>Hàm <code class="inline">create_plan()</code> — luồng ra quyết định</h4>
+<pre><code><span class="ln">110</span>    <span class="kw">async def</span> <span class="fn">create_plan</span>(self, user_message, context, conversation_history):
+<span class="ln">134</span>        all_products = self._extract_products_from_history(conversation_history)
+<span class="ln">137</span>        <span class="kw">if</span> self._wants_all_items(user_message) <span class="kw">and</span> all_products:    <span class="com"># "thêm tất cả"</span>
+<span class="ln">138</span>            <span class="kw">return</span> <span class="kw">await</span> self._plan_add_all(...)
+<span class="ln">142</span>        selected_items = self._extract_item_selections(user_message, all_products)
+<span class="ln">143</span>        <span class="kw">if</span> selected_items:                                  <span class="com"># "thêm món 1, 3, 5"</span>
+<span class="ln">144</span>            <span class="kw">return</span> <span class="kw">await</span> self._plan_add_specific_items(...)
+<span class="ln">148</span>        <span class="kw">if</span> self._is_continuation(user_message) <span class="kw">and</span> all_products:  <span class="com"># "thêm vào giỏ" tiếp</span>
+<span class="ln">150</span>            <span class="kw">return</span> <span class="kw">await</span> self._plan_with_previous_products(...)
+<span class="ln">154</span>        plan = self._try_pattern_matching(user_message)     <span class="com"># thử regex (nhanh)</span>
+<span class="ln">155</span>        <span class="kw">if</span> plan:  <span class="kw">return</span> plan
+<span class="ln">160</span>        <span class="kw">if</span> self._use_llm:                                   <span class="com"># cuối cùng mới dùng LLM</span>
+<span class="ln">161</span>            plan = <span class="kw">await</span> self._create_plan_llm(...)
+<span class="ln">166</span>        <span class="kw">return</span> ExecutionPlan(mode=SINGLE, steps=[...Search Agent...])  <span class="com"># mặc định: tìm kiếm</span></code></pre>
+<div class="explain">
+<code class="inline">create_plan()</code> ra quyết định theo <b>thứ tự ưu tiên</b> (rẻ/nhanh trước, đắt sau):
+<ul>
+  <li>① "thêm tất cả" + có sản phẩm trong lịch sử → thêm hết vào giỏ.</li>
+  <li>② "thêm món 1, 3, 5" → bóc số thứ tự, thêm đúng món được chọn.</li>
+  <li>③ Câu nối tiếp ("thêm vào giỏ") → dùng sản phẩm tìm được trước đó.</li>
+  <li>④ Khớp regex → tạo kế hoạch tức thì.</li>
+  <li>⑤ Hết cách → mới gọi LLM lập kế hoạch (<code class="inline">_create_plan_llm</code>).</li>
+  <li>⑥ Vẫn không được → mặc định: 1 bước Search Agent.</li>
+</ul>
+<b>Điểm hay:</b> đây là chiến lược "tiết kiệm token" — chỉ trả tiền cho LLM khi thật sự cần.
+</div>
+
+<div class="note">
+<b>⚠️ Lưu ý quan trọng:</b> bước ⑤ chỉ chạy khi <code class="inline">self._use_llm == True</code>.
+Nhưng trong <code class="inline">main.py</code>, planning agent được tạo bằng
+<code class="inline">PlanningAgent(openai_client=None, ...)</code> → khiến <code class="inline">_use_llm = False</code>,
+rồi mới gán <code class="inline">_openai</code> sau. <b>Cờ <code class="inline">_use_llm</code> không được bật lại</b>
+→ thực tế nhánh LLM planning <i>gần như không bao giờ chạy</i>. Xem chi tiết ở <a href="#bug">mục Bug</a>.
+</div>
+
+<h4>Hàm <code class="inline">_create_plan_llm()</code> — lập kế hoạch bằng LLM</h4>
+<pre><code><span class="ln">453</span>        response = <span class="kw">await</span> self._openai.chat.completions.create(
+<span class="ln">454</span>            model=self._model,
+<span class="ln">455</span>            messages=[{<span class="str">"role"</span>:<span class="str">"system"</span>, ...}, {<span class="str">"role"</span>:<span class="str">"user"</span>, ...}],
+<span class="ln">459</span>            response_format={<span class="str">"type"</span>: <span class="str">"json_object"</span>},  <span class="com">⭐ bắt LLM trả JSON</span>
+<span class="ln">460</span>            max_tokens=<span class="num">500</span>,
+<span class="ln">461</span>        )
+<span class="ln">464</span>        result = json.loads(response.choices[<span class="num">0</span>].message.content)  <span class="com"># đọc JSON</span>
+<span class="ln">474</span>        mode = ExecutionMode(result.get(<span class="str">"mode"</span>, <span class="str">"SINGLE"</span>).lower())</code></pre>
+<div class="explain">
+Khác với routing (dùng function calling), planning dùng <b><code class="inline">response_format=json_object</code></b>
+— ép LLM trả về <b>thuần JSON</b> mô tả kế hoạch (<code class="inline">mode</code> + danh sách
+<code class="inline">steps</code>). Code parse JSON đó thành đối tượng <code class="inline">ExecutionPlan</code>.
+</div>
+
+<!-- ---------- plan_executor.py ---------- -->
+<h3 id="executor2">5.3 — <code class="inline">plan_executor.py</code>: Thực thi kế hoạch</h3>
+
+<div class="filebar"><span class="dot"></span> services/orchestrator/plan_executor.py</div>
+<pre><code><span class="ln">46</span>    <span class="kw">async def</span> <span class="fn">execute</span>(self, plan, context):
+<span class="ln">62</span>        <span class="kw">if</span> plan.mode == ExecutionMode.SINGLE:
+<span class="ln">63</span>            <span class="kw">return</span> <span class="kw">await</span> self._execute_single(plan.steps[<span class="num">0</span>], context)
+<span class="ln">65</span>        <span class="kw">elif</span> plan.mode == ExecutionMode.SEQUENTIAL:
+<span class="ln">66</span>            <span class="kw">return</span> <span class="kw">await</span> self._execute_sequential(plan.steps, context)
+<span class="ln">68</span>        <span class="kw">elif</span> plan.mode == ExecutionMode.PARALLEL:
+<span class="ln">69</span>            <span class="kw">return</span> <span class="kw">await</span> self._execute_parallel(plan.steps, context)</code></pre>
+<div class="explain">
+<code class="inline">execute()</code> là "công tắc" — chọn cách chạy theo <code class="inline">mode</code> của kế hoạch.
+</div>
+
+<h4>Chế độ SEQUENTIAL — truyền dữ liệu giữa các bước</h4>
+<pre><code><span class="ln">121</span>        <span class="kw">for</span> step <span class="kw">in</span> steps:
+<span class="ln">130</span>            task = self._build_task_with_context(step, results, accumulated_context)
+<span class="ln">133</span>            result = <span class="kw">await</span> self._send_to_agent(step.agent_name, task, context)
+<span class="ln">135</span>            results[step.step_id] = result
+<span class="ln">144</span>            accumulated_context.update({               <span class="com"># gom kết quả cho bước sau</span>
+<span class="ln">145</span>                <span class="str">f"step_{step.step_id}_result"</span>: result.data <span class="kw">or</span> {},
+<span class="ln">146</span>                <span class="str">f"step_{step.step_id}_text"</span>: result.text,
+<span class="ln">147</span>            })</code></pre>
+<div class="explain">
+Chạy <b>tuần tự</b> từng bước. Mấu chốt là <code class="inline">_build_task_with_context()</code>:
+nó <b>nhồi kết quả của bước trước vào câu lệnh của bước sau</b>. Vd Search Agent tìm xong sản phẩm
+(có ID), <code class="inline">_build_task_with_context</code> ghép ID đó vào task của Order Agent —
+nhờ vậy Order Agent biết chính xác sản phẩm nào để thêm vào giỏ.
+</div>
+
+<h4>Chế độ PARALLEL — chạy song song</h4>
+<pre><code><span class="ln">199</span>        task_coroutines = [execute_step(step) <span class="kw">for</span> step <span class="kw">in</span> steps]
+<span class="ln">200</span>        step_results = <span class="kw">await</span> asyncio.gather(*task_coroutines, return_exceptions=<span class="kw">True</span>)</code></pre>
+<div class="explain">
+<code class="inline">asyncio.gather()</code> chạy <b>tất cả các bước cùng lúc</b> rồi đợi xong hết.
+<code class="inline">return_exceptions=True</code> nghĩa là: nếu 1 bước lỗi, các bước khác <b>vẫn tiếp tục</b>,
+lỗi được gói lại chứ không làm sập cả nhóm. Nhanh hơn khi các việc độc lập (vd tìm 2 thứ khác nhau).
+</div>
+
+<h4><code class="inline">_send_to_agent()</code> — gửi việc qua A2A</h4>
+<pre><code><span class="ln">342</span>        <span class="kw">if</span> <span class="str">"user_id"</span> <span class="kw">in</span> context <span class="kw">and</span> context[<span class="str">"user_id"</span>]:
+<span class="ln">344</span>            task = <span class="str">f"{task} [user_id={user_id}]"</span>          <span class="com"># gắn user_id</span>
+<span class="ln">347</span>        <span class="kw">if</span> <span class="str">"token"</span> <span class="kw">in</span> context <span class="kw">and</span> context[<span class="str">"token"</span>]:
+<span class="ln">349</span>            task = <span class="str">f"{task} [SYSTEM: JWT_TOKEN={token}]"</span>     <span class="com"># gắn token</span>
+<span class="ln">369</span>        response = <span class="kw">await</span> connection.send_message(request)
+<span class="ln">375</span>        text = RoutingAgent._extract_text_from_result(result_data)
+<span class="ln">376</span>        data = RoutingAgent._extract_data_from_result(result_data)</code></pre>
+<div class="explain">
+Đóng gói task thành tin nhắn A2A, gắn kèm <code class="inline">user_id</code> và <code class="inline">token</code>,
+gửi cho agent con, rồi tái sử dụng 2 hàm bóc tách của <code class="inline">RoutingAgent</code> để lấy
+kết quả. Tránh viết lại code — gọn.
+</div>
+
+<!-- ---------- conversation.py ---------- -->
+<h3 id="conversation">5.4 — <code class="inline">conversation.py</code>: Quản lý lịch sử thông minh</h3>
+
+<div class="filebar"><span class="dot"></span> services/orchestrator/conversation.py</div>
+<pre><code><span class="ln">45</span><span class="kw">class</span> <span class="fn">SmartConversationManager</span>:
+<span class="ln">54</span>    FULL_PAIRS = <span class="num">3</span>            <span class="com"># giữ NGUYÊN VĂN 3 cặp hỏi-đáp gần nhất</span>
+<span class="ln">90</span>        <span class="kw">if</span> <span class="fn">len</span>(self._history[user_id]) > self.FULL_PAIRS * <span class="num">2</span>:
+<span class="ln">91</span>            self._summarize(user_id)                       <span class="com"># cũ hơn → tóm tắt lại</span>
+<span class="ln">93</span>    <span class="kw">def</span> <span class="fn">_summarize</span>(self, user_id):
+<span class="ln">104</span>        <span class="kw">for</span> msg <span class="kw">in</span> messages_to_summarize:
+<span class="ln">108</span>            <span class="kw">if</span> msg.products:
+<span class="ln">109</span>                summary_parts.append(<span class="str">f"Bot: showed {len(msg.products)} products"</span>)
+<span class="ln">117</span>        self._summary[user_id] = <span class="str">" | "</span>.join(summary_parts[-<span class="num">5</span>:])</code></pre>
+<div class="explain">
+<b>"Cửa sổ trượt" (sliding window):</b> giữ <b>nguyên văn 3 cặp hỏi-đáp gần nhất</b>; những
+tin nhắn cũ hơn được <b>nén thành 1 dòng tóm tắt</b> (vd "Bot: showed 5 products | User: ...").
+Mục đích: LLM vẫn "nhớ" được mạch hội thoại dài <b>mà không bị tốn quá nhiều token</b>.
+<br><br>
+<b>Lưu ý:</b> hàm <code class="inline">_summarize</code> này tóm tắt bằng <b>code thuần</b> (ghép chuỗi),
+<i>không</i> gọi LLM — nên nhanh và miễn phí, nhưng bản tóm tắt khá "máy móc".
+</div>
+
+<!-- ====================================================== -->
+<h2 id="workers">6. Ba Agent chuyên môn (Search / Stylist / Order)</h2>
+<p>
+Cả 3 agent này có cấu trúc <b>giống hệt nhau</b>: 1 file <code class="inline">main.py</code> (khởi động server),
+1 file <code class="inline">agent.py</code> (lắp skill vào agent), và các <code class="inline">skills/</code>.
+Chúng đều dùng lại <code class="inline">SkillBasedExecutor</code> — nên cũng có vòng lặp ReAct riêng.
+</p>
+
+<h3>6.1 — <span class="tag t-search">Search Agent</span> Tìm sản phẩm</h3>
+<div class="filebar"><span class="dot"></span> services/search/skills/product_search.py — execute_tool()</div>
+<pre><code><span class="ln">75</span>    <span class="kw">async def</span> <span class="fn">execute_tool</span>(self, tool_name, args):
+<span class="ln">79</span>        query = args[<span class="str">"query"</span>]
+<span class="ln">80</span>        top_k = args.get(<span class="str">"top_k"</span>, <span class="num">5</span>)              <span class="com"># số kết quả, mặc định 5</span>
+<span class="ln">83</span>        result = <span class="kw">await</span> self._backend.vector_search(query, top_k)  <span class="com">⭐ tìm kiếm ngữ nghĩa</span>
+<span class="ln">84</span>        products = result.get(<span class="str">"products"</span>, [])
+<span class="ln">87</span>        <span class="kw">return</span> ToolResult(
+<span class="ln">88</span>            content=products,                <span class="com"># cho LLM "đọc" để tóm tắt</span>
+<span class="ln">89</span>            data={<span class="str">"products"</span>: products},     <span class="com"># gửi thẳng frontend hiển thị</span>
+<span class="ln">90</span>        )</code></pre>
+<div class="explain">
+Skill này chỉ có <b>1 tool: <code class="inline">search_products</code></b>. Nó gọi
+<code class="inline">backend.vector_search()</code> — đây là <b>tìm kiếm ngữ nghĩa</b> (vector search):
+backend chuyển câu hỏi thành vector và tìm sản phẩm "gần nghĩa", chứ không phải so khớp từ khóa
+cứng nhắc. Nhờ vậy "áo ấm mùa đông" vẫn ra được "áo khoác lông".
+<br><br>
+Kết quả trả về <b>cả 2 kênh</b>: <code class="inline">content</code> để LLM viết câu trả lời thân thiện,
+<code class="inline">data</code> để giao diện vẽ thẻ sản phẩm có ảnh/giá.
+</div>
+
+<h3>6.2 — <span class="tag t-stylist">Stylist Agent</span> Tư vấn phối đồ</h3>
+<p>Stylist Agent có <b>3 tool</b>:</p>
+<table>
+  <tr><th>Tool</th><th>Tác dụng</th></tr>
+  <tr><td><code class="inline">search_products</code></td><td>Tìm sản phẩm theo dịp/phong cách/mùa.</td></tr>
+  <tr><td><code class="inline">get_product_catalog</code></td><td>Lấy <b>toàn bộ</b> catalog khi cần lựa chọn rộng.</td></tr>
+  <tr><td><code class="inline">get_user_preferences</code></td><td>Lấy sở thích đã lưu của khách (size, màu, style) để cá nhân hóa.</td></tr>
+</table>
+<p>
+Điểm khác biệt nằm ở <b>prompt</b> (<code class="inline">outfit-recommendation.yaml</code>): nó yêu cầu LLM
+trả về một <b>JSON outfit hoàn chỉnh</b> — gồm <code class="inline">outfit_name</code>, danh sách
+<code class="inline">items</code> (mỗi món có vai trò), <code class="inline">reasoning</code> (vì sao hợp nhau),
+<code class="inline">styling_tips</code>. Và bắt buộc "tối thiểu phải có áo + quần + giày", "chỉ dùng
+sản phẩm có thật trong catalog".
+</p>
+
+<h3>6.3 — <span class="tag t-order">Order Agent</span> Giỏ hàng &amp; Thanh toán</h3>
+<p>Đây là agent phức tạp nhất, có <b>5 tool</b>:</p>
+<table>
+  <tr><th>Tool</th><th>Tác dụng</th></tr>
+  <tr><td><code class="inline">search_products</code></td><td>Tìm sản phẩm để lấy ID trước khi đặt.</td></tr>
+  <tr><td><code class="inline">add_to_cart</code></td><td>Thêm <b>1</b> sản phẩm vào giỏ.</td></tr>
+  <tr><td><code class="inline">add_multiple_to_cart</code></td><td>Thêm <b>nhiều</b> sản phẩm cùng lúc ("thêm tất cả").</td></tr>
+  <tr><td><code class="inline">create_order</code></td><td>Tạo đơn hàng từ danh sách product ID.</td></tr>
+  <tr><td><code class="inline">get_payment_link</code></td><td>Sinh link thanh toán <b>VNPay</b>.</td></tr>
+</table>
+
+<h4>Cơ chế bóc JWT token — bảo mật</h4>
+<div class="filebar"><span class="dot"></span> services/order/skills/order_processing.py</div>
+<pre><code><span class="ln">21</span>JWT_TOKEN_PATTERN = re.compile(<span class="str">r"\[SYSTEM:\s*JWT_TOKEN=([^\]]+)\]"</span>)
+
+<span class="ln">32</span>    <span class="kw">def</span> <span class="fn">_extract_and_set_token</span>(self, message):
+<span class="ln">36</span>        match = JWT_TOKEN_PATTERN.search(message)
+<span class="ln">37</span>        <span class="kw">if</span> match:
+<span class="ln">38</span>            token = match.group(<span class="num">1</span>).strip()
+<span class="ln">39</span>            BackendClient.set_context_token(token)         <span class="com"># lưu token vào context</span>
+<span class="ln">42</span>            self._user_message = JWT_TOKEN_PATTERN.sub(<span class="str">""</span>, message)  <span class="com">⭐ XÓA token khỏi text</span>
+
+<span class="ln">251</span>    <span class="kw">def</span> <span class="fn">cleanup</span>(self):
+<span class="ln">253</span>        BackendClient.clear_context_token()                <span class="com"># xóa token sau khi xong</span></code></pre>
+<div class="explain">
+<ul>
+  <li>Token được gửi kèm trong text dưới dạng <code class="inline">[SYSTEM: JWT_TOKEN=...]</code>.
+  Skill dùng regex bóc nó ra, lưu vào "context token" của <code class="inline">BackendClient</code>.</li>
+  <li><b>Dòng 42 rất quan trọng:</b> sau khi bóc, token bị <b>xóa khỏi text</b> trước khi đưa cho LLM
+  → tránh việc token rò rỉ vào câu trả lời, và tránh LLM bị rối.</li>
+  <li><code class="inline">cleanup()</code> (dòng 251-253) xóa token sau khi xong — đã thấy ở
+  <code class="inline">executor.py</code> dòng 180-181, luôn được gọi trong khối <code class="inline">finally</code>.</li>
+</ul>
+</div>
+
+<div class="note">
+<b>⚠️ Bug trong file này:</b> hàm <code class="inline">execute_tool()</code> (dòng 159) có chữ ký
+<code class="inline">execute_tool(self, tool_name, args)</code> — <b>không có tham số <code class="inline">context</code></b>.
+Nhưng bên trong, ở nhánh <code class="inline">add_to_cart</code> (dòng 168) và
+<code class="inline">add_multiple_to_cart</code> (dòng 197) lại viết <code class="inline">context.get("user_id")</code>.
+Biến <code class="inline">context</code> không tồn tại → sẽ ném <code class="inline">NameError</code> khi khách thêm
+sản phẩm vào giỏ. Chi tiết ở <a href="#bug">mục Bug</a>.
+</div>
+
+<h4>BackendClient — cầu nối tới Spring Boot</h4>
+<div class="filebar"><span class="dot"></span> shared/backend_client.py</div>
+<pre><code><span class="ln">10</span>_current_token = contextvars.ContextVar(<span class="str">"current_token"</span>, default=<span class="kw">None</span>)
+
+<span class="ln">66</span>    <span class="kw">async def</span> <span class="fn">vector_search</span>(self, query, top_k=<span class="num">5</span>):
+<span class="ln">68</span>        response = <span class="kw">await</span> client.post(<span class="str">"/api/products/vector-search"</span>,
+<span class="ln">70</span>            json={<span class="str">"query"</span>: query, <span class="str">"top_k"</span>: top_k})
+<span class="ln">130</span>    <span class="kw">async def</span> <span class="fn">add_multiple_to_cart</span>(self, user_id, product_ids, quantities=<span class="kw">None</span>):
+<span class="ln">137</span>        <span class="kw">for</span> product_id, quantity <span class="kw">in</span> <span class="fn">zip</span>(product_ids, quantities):
+<span class="ln">139</span>            result = <span class="kw">await</span> self.add_to_cart(user_id, product_id, quantity)  <span class="com"># gọi lần lượt</span></code></pre>
+<div class="explain">
+<code class="inline">BackendClient</code> là lớp gọi REST API tới backend Spring Boot. Dùng
+<code class="inline">contextvars.ContextVar</code> — một biến "an toàn theo từng request bất đồng bộ",
+nên token của khách A không lẫn sang khách B dù server xử lý nhiều request song song.
+<br><br>
+Lưu ý <code class="inline">add_multiple_to_cart</code> thực ra là <b>gọi <code class="inline">add_to_cart</code>
+lặp nhiều lần</b> (dòng 137-139), không phải 1 API gộp — đơn giản nhưng chậm hơn khi giỏ nhiều món.
+</div>
+
+<!-- ====================================================== -->
+<h2 id="prompt">7. Các Prompt — "linh hồn" điều khiển LLM</h2>
+<p>
+Hành vi AI <b>không nằm hết trong code Python</b> — phần lớn nằm trong các file
+<code class="inline">.yaml</code> ở thư mục <code class="inline">prompts/</code>. Đây là nơi "dạy" LLM cách cư xử.
+Sửa prompt = đổi hành vi AI mà không cần đụng code.
+</p>
+
+<table>
+  <tr><th>File prompt</th><th>Dùng cho</th><th>Chỉ thị quan trọng nhất</th></tr>
+  <tr>
+    <td><code class="inline">routing.yaml</code></td>
+    <td>RoutingAgent</td>
+    <td>"BẮT BUỘC gọi <code class="inline">send_message</code> cho MỌI request. KHÔNG tự trả lời."</td>
+  </tr>
+  <tr>
+    <td><code class="inline">planning.yaml</code></td>
+    <td>PlanningAgent</td>
+    <td>Quy tắc chọn SINGLE/SEQUENTIAL/PARALLEL + bắt trả JSON đúng định dạng.</td>
+  </tr>
+  <tr>
+    <td><code class="inline">orchestration.yaml</code></td>
+    <td>OrchestrationSkill</td>
+    <td>Khung quyết định: việc đơn → <code class="inline">route_to_agent</code>; việc phức tạp → <code class="inline">plan_and_execute</code>.</td>
+  </tr>
+  <tr>
+    <td><code class="inline">product-search.yaml</code></td>
+    <td>Search Skill</td>
+    <td>"Trình bày kết quả dạng bảng markdown. LUÔN gọi tool — đừng bịa sản phẩm."</td>
+  </tr>
+  <tr>
+    <td><code class="inline">order-processing.yaml</code></td>
+    <td>Order Skill</td>
+    <td>"'thêm tất cả' → PHẢI dùng <code class="inline">add_multiple_to_cart</code>. Bóc <code class="inline">user_id</code> từ <code class="inline">[user_id=X]</code>."</td>
+  </tr>
+  <tr>
+    <td><code class="inline">outfit-recommendation.yaml</code></td>
+    <td>Stylist Skill</td>
+    <td>"Trả JSON outfit hoàn chỉnh. Chỉ dùng product ID có thật. Tối thiểu áo+quần+giày."</td>
+  </tr>
+</table>
+
+<div class="explain">
+Một chủ đề lặp đi lặp lại trong mọi prompt: <b>"LUÔN dùng tool, KHÔNG BAO GIỜ tự trả lời từ kiến
+thức của mình"</b>. Đây là tuyến phòng thủ chính chống <b>hallucination</b> (AI bịa ra sản phẩm/giá
+không có thật) — cực kỳ quan trọng với một sàn thương mại điện tử.
+</div>
+
+<!-- ====================================================== -->
+<h2 id="bug">8. ⚠️ Bug &amp; điểm cần lưu ý (đã kiểm tra kỹ)</h2>
+<p>Trong quá trình đọc source, tôi phát hiện các điểm sau cần bạn lưu tâm:</p>
+
+<h3>🔴 Bug 1 — <code class="inline">context</code> không tồn tại trong Order Agent</h3>
+<div class="note">
+<b>File:</b> <code class="inline">services/order/skills/order_processing.py</code>, hàm
+<code class="inline">execute_tool()</code> (dòng 159).<br>
+<b>Vấn đề:</b> chữ ký hàm là <code class="inline">execute_tool(self, tool_name, args)</code> — không có
+tham số <code class="inline">context</code>. Nhưng nhánh <code class="inline">add_to_cart</code> (dòng 168) và
+<code class="inline">add_multiple_to_cart</code> (dòng 197) viết:
+<br><code class="inline">user_id = context.get("user_id") or args.get("user_id")</code>
+<br><b>Hậu quả:</b> Python ném <code class="inline">NameError: name 'context' is not defined</code> ngay khi
+khách thêm sản phẩm vào giỏ. Tính năng giỏ hàng qua AI <b>sẽ lỗi</b>.
+<br><b>Cách sửa gợi ý:</b> bỏ <code class="inline">context.get("user_id") or</code>, chỉ dùng
+<code class="inline">args.get("user_id")</code>; và đảm bảo <code class="inline">user_id</code> được nhồi vào
+<code class="inline">args</code> (hiện <code class="inline">user_id</code> đang nằm trong text dạng
+<code class="inline">[user_id=X]</code>, cần regex bóc ra như <code class="inline">order-processing.yaml</code> hướng dẫn LLM làm).
+</div>
+
+<h3>🟠 Bug 2 — LLM Planning gần như không bao giờ chạy</h3>
+<div class="note">
+<b>File:</b> <code class="inline">services/orchestrator/main.py</code> (dòng 72-76) +
+<code class="inline">planning_agent.py</code> (dòng 105-108).<br>
+<b>Vấn đề:</b> <code class="inline">PlanningAgent.__init__</code> đặt
+<code class="inline">self._use_llm = openai_client is not None</code>. main.py gọi
+<code class="inline">PlanningAgent(openai_client=None, ...)</code> → <code class="inline">_use_llm = False</code>.
+Sau đó main.py gán <code class="inline">planning_agent._openai = AsyncOpenAI(...)</code> nhưng
+<b>không bật lại <code class="inline">_use_llm</code></b>.<br>
+<b>Hậu quả:</b> trong <code class="inline">create_plan()</code>, nhánh
+<code class="inline">if self._use_llm:</code> (dòng 160) luôn False → khi regex không khớp, kế hoạch
+luôn rơi về mặc định "1 bước Search Agent" thay vì để LLM lập kế hoạch linh hoạt.<br>
+<b>Cách sửa gợi ý:</b> trong main.py thêm <code class="inline">planning_agent._use_llm = True</code> sau khi gán
+<code class="inline">_openai</code>; hoặc truyền thẳng client vào constructor.
+</div>
+
+<h3>🟡 Lưu ý 3 — Định tuyến bị gọi LLM 2 lần</h3>
+<div class="note">
+<b>File:</b> <code class="inline">tools/route_tool.py</code> → <code class="inline">routing_agent.py</code>.<br>
+LLM của orchestrator chọn tool <code class="inline">route_to_agent</code> và đã chỉ định
+<code class="inline">agent_name</code>. Nhưng <code class="inline">execute_route_to_agent()</code> lại gọi
+<code class="inline">routing_agent.run()</code> — vốn chạy <b>nguyên một vòng lặp LLM tool-calling nữa</b> để...
+chọn agent lần thứ hai. Tham số <code class="inline">agent_name</code> mà orchestrator chọn gần như bị
+<b>bỏ qua</b> (chỉ dùng làm nhãn hiển thị). → Tốn thêm 1 lượt gọi LLM không cần thiết. Không gây sai
+kết quả, nhưng <b>chậm hơn và tốn tiền hơn</b>.
+</div>
+
+<h3>🟡 Lưu ý 4 — Bộ nhớ chỉ nằm trong RAM</h3>
+<div class="note">
+<code class="inline">MemoryStore</code> và <code class="inline">SmartConversationManager</code> lưu toàn bộ trong RAM.
+<b>Restart server = mất hết lịch sử hội thoại.</b> Ngoài ra nếu chạy nhiều bản orchestrator
+(scale ngang/load balancer) thì mỗi bản có bộ nhớ riêng → khách bị "quên" ngẫu nhiên. Production
+nên chuyển sang Redis hoặc database.
+</div>
+
+<h3>🟡 Lưu ý 5 — <code class="inline">add_to_cart</code> nuốt lỗi nhưng vẫn báo thành công</h3>
+<div class="note">
+<b>File:</b> <code class="inline">order_processing.py</code> dòng 186-192. Khi gọi backend lỗi, code chỉ
+ghi log rồi <i>vẫn</i> trả <code class="inline">{"status": "added"}</code> — kèm chú thích
+<i>"Still return success to user"</i>. Khách sẽ thấy "đã thêm vào giỏ" trong khi backend
+<b>chưa thật sự thêm</b>. Nên trả lỗi rõ ràng để khách biết.
+</div>
+
+<h3>🟢 Điểm tốt đáng ghi nhận</h3>
+<div class="ok">
+<ul>
+  <li><b>Kiến trúc nhất quán:</b> cả 4 agent dùng chung khung Skill/Agent/Executor — dễ đọc, dễ mở rộng.</li>
+  <li><b>Nhiều lớp dự phòng (fallback):</b> LLM lỗi → keyword routing; LLM lười gọi tool → direct fallback;
+  regex trước, LLM sau. Hệ thống khó "chết hẳn".</li>
+  <li><b>Chống hallucination:</b> mọi prompt đều ép "luôn dùng tool, đừng bịa".</li>
+  <li><b>Tách <code class="inline">content</code> / <code class="inline">data</code>:</b> LLM xử lý chữ, frontend nhận dữ liệu thô — sạch sẽ.</li>
+  <li><b>Tiết kiệm chi phí:</b> ưu tiên regex/keyword trước khi gọi LLM; cửa sổ trượt giới hạn token.</li>
+  <li><b>Prompt tách ra file YAML:</b> chỉnh hành vi AI không cần sửa code.</li>
+</ul>
+</div>
+
+<h3>📌 Tóm tắt 1 dòng</h3>
+<p>
+Đây là một hệ thống <b>multi-agent</b> thiết kế bài bản theo pattern <b>ReAct + Function Calling +
+giao thức A2A</b>: một orchestrator điều phối 3 worker agent (Search/Stylist/Order), mỗi agent tự
+chạy vòng lặp suy luận–gọi tool riêng. Kiến trúc tốt, có nhiều lớp dự phòng, nhưng <b>cần sửa
+Bug 1 (lỗi <code class="inline">context</code> trong giỏ hàng)</b> và <b>Bug 2 (LLM planning bị tắt)</b>
+trước khi đưa vào dùng thật.
+</p>
+
+<footer>
+  Tài liệu giải thích source AI — Fashion AI Agent (ToRoMe Store)<br>
+  Tạo tự động bởi Claude Code · 22/05/2026 · Phân tích thư mục <code class="inline">fashion-ai-agent/</code>
+</footer>
+
+</div>
+</body>
+</html>
