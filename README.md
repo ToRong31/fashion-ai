@@ -1,6 +1,6 @@
 # ToRoMe Store — AI-Powered Vietnamese Fashion E-Commerce
 
-A modern Vietnamese fashion e-commerce platform featuring an AI shopping assistant built with a multi-agent system. Three independent layers communicate via REST APIs: a React + Vite frontend, a Spring Boot microservices backend, and a FastAPI + LangGraph AI layer.
+A modern Vietnamese fashion e-commerce platform featuring an AI shopping assistant built with a multi-agent system. Three independent layers communicate via REST APIs: a React + Vite frontend, a Spring Boot microservices backend, and a FastAPI + Google A2A SDK AI layer.
 
 ---
 
@@ -29,7 +29,7 @@ A modern Vietnamese fashion e-commerce platform featuring an AI shopping assista
 │                                                                  │
 │  ┌──────────────┐           ┌──────────────────────────────┐     │
 │  │payment-svc   │           │  AI Layer (:8000)             │     │
-│  │  (:9004)     │           │  FastAPI · LangGraph · A2A    │     │
+│  │  (:9004)     │           │  FastAPI · Google A2A SDK    │     │
 │  │  VNPay       │◄──────────│  Multi-Agent Orchestrator     │     │
 │  └──────────────┘           │                                │     │
 │                             │  ┌──────────┐ ┌──────────┐    │     │
@@ -61,7 +61,7 @@ A modern Vietnamese fashion e-commerce platform featuring an AI shopping assista
 |-------|-----------|---------|
 | Frontend | React 19, TypeScript, Vite 6 | TailwindCSS 4, Zustand 5 |
 | Backend | Spring Boot 3.4, Java 21 | PostgreSQL 16, Elasticsearch 8.17 |
-| AI Layer | Python 3.13, FastAPI | LangGraph, Google A2A SDK |
+| AI Layer | Python 3.13, FastAPI | Google A2A SDK |
 | Gateway | Spring Cloud Gateway | JWT (jjwt 0.12.6) |
 | Auth | Stateless JWT | BCrypt password hashing |
 | Payment | VNPay sandbox | Docker Compose |
